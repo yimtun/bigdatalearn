@@ -1,0 +1,410 @@
+spark   master  worker
+
+
+MASTER node-199
+
+
+node-199
+
+ssh-copy-id node-196
+ssh-copy-id node-197
+ssh-copy-id node-198
+
+
+
+
+tar xzvf spark-2.4.4-bin-hadoop2.7.tgz  -C /usr/local/
+
+
+tar xzvf hadoop-2.7.4.tar.gz  -C /usr/local/
+
+scp node-191:/usr/local/hadoop-2.7.4/etc/hadoop/*   /usr/local/hadoop-2.7.4/etc/hadoop/
+
+
+
+
+spark-env.sh
+
+
+export JAVA_HOME=/usr/local/jdk1.8.0_144
+export HADOOP_HOME=/usr/local/hadoop-2.7.4
+export HADOOP_CONF_DIR=/usr/local/hadoop-2.7.4/etc/hadoop
+export SPARK_WORKER_MEMORY=500m
+export SPARK_WORKER_CORES=1
+export SPARK_DAEMON_JAVA_OPTS="-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=node-196:2181,node-197:2181,node-198:2181 -Dspark.deploy.zookeeper.dir=/spark"
+
+slaves
+node-196
+node-197
+node-198
+
+
+
+node-199
+
+./start-master.sh 
+
+
+scp /usr/local/spark-2.4.4-bin-hadoop2.7/conf/*      node-196:/usr/local/spark-2.4.4-bin-hadoop2.7/conf/
+scp /usr/local/spark-2.4.4-bin-hadoop2.7/conf/*      node-197:/usr/local/spark-2.4.4-bin-hadoop2.7/conf/
+scp /usr/local/spark-2.4.4-bin-hadoop2.7/conf/*      node-198:/usr/local/spark-2.4.4-bin-hadoop2.7/conf/
+
+node-196 node-197 node-198
+
+jps | grep Worker
+14146 Worker
+
+
+
+
+
+ssh-copy-id node-196
+ssh-copy-id node-197
+ssh-copy-id node-198
+
+
+./start-slave.sh  spark://node-199:7077
+./start-slave.sh  spark://node-199:7077
+./start-slave.sh  spark://node-199:7077
+
+
+
+http://172.16.101.199:8080/
+
+
+node-196 node-197  master backup
+
+./start-master.sh 
+
+http://172.16.101.196:8080/   没有worker 
+
+
+停止 node-199  master
+
+
+
+
+https://www.cnblogs.com/qingyunzong/p/8888080.html
+
+
+
+
+node-199
+
+[root@node-199 sbin]# ./start-all.sh 
+
+[root@node-199 sbin]# jps
+Master
+
+
+node-196
+jps | grep Worker
+21076 Worker
+
+
+node-197
+jps | grep Worker
+18123 Worker
+
+
+node-198
+jps | grep Worker
+20160 Worker
+
+
+
+
+
+
+
+node-196 node-197 node-198  ./start-master.sh
+
+
+
+http://172.16.101.199:8080/   Alive 
+
+URL: spark://node-199:7077
+Alive Workers: 3
+Cores in use: 3 Total, 0 Used
+Memory in use: 1500.0 MB Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: ALIVE
+
+
+
+http://172.16.101.196:8080/  STANDBY
+URL: spark://node-196:7077
+Alive Workers: 0
+Cores in use: 0 Total, 0 Used
+Memory in use: 0.0 B Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: STANDBY
+
+
+http://172.16.101.197:8080/  STANDBY
+URL: spark://node-197:7077
+Alive Workers: 0
+Cores in use: 0 Total, 0 Used
+Memory in use: 0.0 B Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: STANDBY
+
+http://172.16.101.198:8080/  STANDBY
+
+URL: spark://node-198:7077
+Alive Workers: 0
+Cores in use: 0 Total, 0 Used
+Memory in use: 0.0 B Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: STANDBY
+
+
+
+
+
+
+
+test ha
+
+停 node-199 master
+
+[root@node-199 ~]# jps | grep -w Master
+15300 Master
+[root@node-199 ~]# kill -9 15300
+[root@node-199 ~]# jps | grep -w Master
+[root@node-199 ~]# 
+
+
+
+node-196 ALIVE
+
+http://172.16.101.196:8080/
+
+URL: spark://node-196:7077
+Alive Workers: 3
+Cores in use: 3 Total, 0 Used
+Memory in use: 1500.0 MB Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: ALIVE
+
+
+启动node-199 master 
+[root@node-199 ~]# /usr/local/spark-2.4.4-bin-hadoop2.7/sbin/start-master.sh 
+
+http://172.16.101.199:8080/
+
+URL: spark://node-199:7077
+Alive Workers: 0
+Cores in use: 0 Total, 0 Used
+Memory in use: 0.0 B Total, 0.0 B Used
+Applications: 0 Running, 0 Completed 
+Drivers: 0 Running, 0 Completed 
+Status: STANDBY
+
+
+
+
+执行Spark程序on standalone
+
+
+指定当前 master
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7
+
+./bin/spark-submit \
+--class org.apache.spark.examples.SparkPi \
+--master spark://node-196:7077 \
+--executor-memory 512m \
+--total-executor-cores 1 \
+./examples/jars/spark-examples_2.11-2.4.4.jar \
+100
+
+node-196  Running Applications (1)
+
+
+System memory 466092032 must be at least 471859200. Please increase heap size using the --driver-memory option or spark.driver.memory in Spark configuration.
+
+
+export SPARK_WORKER_MEMORY=1024m
+
+
+-Dspark.testing.memory=1073741824
+
+
+启动spark shell
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7
+
+./bin/spark-shell \
+--master spark://node-199:7077 \
+--executor-memory 500m \
+--total-executor-cores 1 
+
+scala> :quit
+
+
+3、 在spark shell中编写WordCount程序
+
+node-199
+
+
+cat > hello.txt << EOF
+you,jump
+i,jump
+you,jump
+i,jump
+jump
+EOF
+
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -mkdir -p /spark
+/usr/local/hadoop-2.7.4/bin/hadoop fs -put hello.txt /spark
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7
+
+
+./bin/spark-shell --master spark://node-199:7077 --executor-memory 1024m --total-executor-cores 4
+
+
+
+scala> sc.textFile("/spark/hello.txt").flatMap(_.split(",")).map((_,1)).reduceByKey(_+_).saveAsTextFile("/spark/out")
+
+
+
+directory hdfs://mycluster/spark/out already exists
+
+
+
+rm  dir 
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -rm -r /spark/out
+
+http://172.16.101.199:4040/jobs/
+
+
+hadoop fs -get /spark/out  localfile
+
+
+/usr/local/hadoop-2.7.4/bin/hadoop   fs -cat /spark/out/p*
+(jump,5)
+(you,2)
+(i,2)
+
+
+
+
+执行Spark程序on YARN   
+
+1、前提
+
+成功启动zookeeper集群、HDFS集群、YARN集群
+
+
+2、启动Spark on YARN
+cd /usr/local/spark-2.4.4-bin-hadoop2.7
+
+
+./bin/spark-shell --master yarn --deploy-mode client
+
+
+
+停止yarn    193 194  ssh  195 196
+
+node-194 
+
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+
+ssh-copy-id node-195
+ssh-copy-id node-196
+
+
+cd /usr/local/hadoop-2.7.4/sbin
+./stop-yarn.sh
+
+
+yarn-site.xml
+
+ <property>
+                <name>yarn.nodemanager.vmem-check-enabled</name>
+                <value>false</value>
+                <description>Whether virtual memory limits will be enforced for containers</description>
+        </property>
+        <property>
+                <name>yarn.nodemanager.vmem-pmem-ratio</name>
+                <value>4</value>
+                <description>Ratio between virtual memory to physical memory when setting memory limits for containers</description>
+        </property>        
+
+
+
+scp yarn-site.xml   node-194:/usr/local/hadoop-2.7.4/etc/hadoop/
+
+
+
+
+修改 yarn-site 后 启动成功   master  yarn
+
+./bin/spark-shell --master yarn --deploy-mode client
+
+Spark context Web UI available at http://node-199:4040
+Spark context available as 'sc' (master = yarn, app id = application_1569724464699_0001).
+Spark session available as 'spark'.
+Welcome to
+
+
+
+yarn web 
+http://172.16.101.193:8088/cluster
+
+
+ 单击ID号链接，可以看到该应用程序的详细信息
+
+
+ApplicationMaster
+
+
+scala> 
+
+
+
+val array = Array(1,2,3,4,5)
+
+val rdd = sc.makeRDD(array)
+
+rdd.count
+scala> 
+
+http://172.16.101.199:8088
+
+
+
+
+
+
+5、执行Spark自带的示例程序PI
+
+
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7
+
+
+
+
+
+./bin/spark-submit  --class org.apache.spark.examples.SparkPi --master yarn --deploy-mode cluster --driver-memory 1024m --executor-memory 1024m --executor-cores 1 ./examples/jars/spark-examples_2.11-2.4.4.jar 10
+
+
+http://172.16.101.193:8088/cluster
+
+
+
+
+
+https://www.cnblogs.com/qingyunzong/p/8888080.html
+
+

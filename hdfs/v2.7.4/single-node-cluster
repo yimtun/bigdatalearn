@@ -1,0 +1,101 @@
+config ip
+
+cat ifcfg-eth0
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=172.16.99.101
+GATEWAY=172.16.99.250
+PREFIX=24
+NAME=eth0
+DEVICE=eth0
+ONBOOT=yes
+
+
+
+https://hadoop.apache.org/docs/r2.7.4/hadoop-project-dist/hadoop-common/SingleCluster.html
+
+
+
+wget  https://archive.apache.org/dist/hadoop/common/hadoop-2.7.4/hadoop-2.7.4.tar.gz   -P  /opt/
+
+
+rpm -ivh jdk-8u201-linux-x64.rpm
+
+java -version
+java version "1.8.0_201"
+Java(TM) SE Runtime Environment (build 1.8.0_201-b09)
+Java HotSpot(TM) 64-Bit Server VM (build 25.201-b09, mixed mode)
+
+
+rpm -qa | grep jdk
+jdk1.8-1.8.0_201-fcs.x86_64
+
+
+rpm -ql  jdk1.8-1.8.0_201-fcs.x86_64
+rpm -e jdk-1.7.0_45-fcs.x86_64
+
+
+
+
+javahome
+
+/usr/java/jdk1.8.0_201-amd64/
+
+yum -y install rsync
+
+
+
+
+
+tar xf hadoop-2.7.4.tar.gz -C /usr/local/
+
+
+
+vim /usr/local/hadoop-2.7.4/etc/hadoop/hadoop-env.sh
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+
+/usr/local/hadoop-2.7.4/bin/hadoop
+
+
+
+
+1 单机模式 Standalone Operation
+
+mkdir  /usr/local/hadoop-2.7.4/input
+
+cp /usr/local/hadoop-2.7.4/etc/hadoop/*.xml  /usr/local/hadoop-2.7.4/input/
+
+cd /usr/local/hadoop-2.7.4/
+
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.4.jar grep input output 'dfs[a-z.]+'
+
+redo 
+
+bin/hadoop fs -rm -r output
+
+
+
+2 Pseudo-Distributed 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

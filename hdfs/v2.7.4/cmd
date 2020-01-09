@@ -1,0 +1,157 @@
+hdfs dfs -mkdir -p /user/hadoop/dir1
+
+touch  testhdfs
+hdfs dfs -put testhdfs  /
+
+
+
+
+
+
+
+curl -i -X PUT "http://172.16.99.101:50070/webhdfs/v1/test?op=CREATE&overwrite=false&blocksize=1048576&replication=3&permission=755"
+
+
+
+
+curl -i -L "http://172.16.99.101:50070/webhdfs/v1/test/hostsac?op=OPEN"
+
+
+
+
+查看目录列表
+
+curl -i "http://172.16.99.101:50070/webhdfs/v1/?op=LISTSTATUS"
+HTTP/1.1 200 OK
+Cache-Control: no-cache
+Expires: Tue, 24 Sep 2019 15:53:10 GMT
+Date: Tue, 24 Sep 2019 15:53:10 GMT
+Pragma: no-cache
+Expires: Tue, 24 Sep 2019 15:53:10 GMT
+Date: Tue, 24 Sep 2019 15:53:10 GMT
+Pragma: no-cache
+Content-Type: application/json
+Transfer-Encoding: chunked
+Server: Jetty(6.1.26)
+
+{"FileStatuses":{"FileStatus":[
+{"accessTime":1569339177688,"blockSize":134217728,"childrenNum":0,"fileId":16389,"group":"supergroup","length":0,"modificationTime":1569339177756,"owner":"root","pathSuffix":"testhdfs","permission":"644","replication":1,"storagePolicy":0,"type":"FILE"},
+{"accessTime":0,"blockSize":0,"childrenNum":1,"fileId":16386,"group":"supergroup","length":0,"modificationTime":1569339097157,"owner":"root","pathSuffix":"user","permission":"755","replication":0,"storagePolicy":0,"type":"DIRECTORY"}
+]}}
+
+
+
+"pathSuffix":"testhdfs"
+"pathSuffix":"user"
+
+
+查看  file dir  
+
+curl -i "http://172.16.99.101:50070/webhdfs/v1/?op=GETFILESTATUS"
+curl -i "http://172.16.99.101:50070/webhdfs/v1/user?op=GETFILESTATUS"
+
+
+
+
+
+创建一个目录
+
+curl -i -X PUT "http://172.16.99.101:50070/webhdfs/v1/testdir?op=MKDIRS"
+
+
+创建并写入一个文件
+
+curl -i -X PUT "http://172.16.99.101:50070/webhdfs/v1/test?op=CREATE&overwrite=false&blocksize=1048576&replication=3&permission=755"
+
+
+curl -i -X PUT -T /etc/hosts "http://172.16.99.101:50075/webhdfs/v1/test/hostsac?op=CREATE&namenoderpcaddress=172.16.99.101:9000&blocksize=1048576&overwrite=false&permission=755&replication=1"
+
+
+
+
+
+
+curl -i -X PUT -T /etc/hosts "http://172.16.99.101:50075/webhdfs/v1/test/hostsac?op=CREATE&namenoderpcaddress=172.16.99.101:9000&blocksize=1048576&overwrite=false&permission=755&replication=1"
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Location: hdfs://172.16.99.101:9000/test/hostsac
+Content-Length: 0
+Connection: close
+
+
+9000  listen  172.16.99.101
+
+
+cat core-site.xml 
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://172.16.99.101:9000</value>
+    </property>
+</configuration>
+
+
+
+
+
+
+hadoop fs -ls /
+Found 4 items
+drwxr-xr-x   - dr.who supergroup          0 2019-09-25 00:08 /test
+drwxr-xr-x   - dr.who supergroup          0 2019-09-25 00:00 /testdir
+-rw-r--r--   1 root   supergroup          0 2019-09-24 23:32 /testhdfs
+drwxr-xr-x   - root   supergroup          0 2019-09-24 23:31 /user
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

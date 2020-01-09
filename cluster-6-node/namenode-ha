@@ -1,0 +1,15 @@
+node-191 node-192
+
+
+
+ssh 
+
+node-191 node-192 -> node-195 node-196
+
+
+mkdir -p /opt/hadoop/tmp
+
+
+slaves
+node-195
+node-196

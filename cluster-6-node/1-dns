@@ -1,0 +1,3 @@
+cat > /etc/resolv.conf << EOF
+nameserver 223.5.5.5
+EOF

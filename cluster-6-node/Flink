@@ -1,0 +1,271 @@
+172.16.101.200   master 
+172.16.101.198
+172.16.101.197
+
+
+
+node-200
+
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+
+ssh-copy-id   node-197
+ssh-copy-id   node-198
+ssh-copy-id   node-199
+ssh-copy-id   node-200
+
+
+
+
+wget https://www.apache.org/dyn/closer.lua/flink/flink-1.7.2/flink-1.7.2-bin-hadoop27-scala_2.11.tgz
+
+
+tar xzvf  flink-1.7.2-bin-hadoop27-scala_2.11.tgz  -C  /usr/local/
+
+cd /usr/local/flink-1.7.2/
+
+
+
+cat masters 
+node-200:8081
+
+
+cat slaves 
+node-197
+node-198
+node-199
+
+
+
+
+scp /usr/local/flink-1.7.2/conf/*  root@node-197:/usr/local/flink-1.7.2/conf/
+scp /usr/local/flink-1.7.2/conf/*  root@node-198:/usr/local/flink-1.7.2/conf/
+scp /usr/local/flink-1.7.2/conf/*  root@node-199:/usr/local/flink-1.7.2/conf/
+
+
+/usr/local/flink-1.7.2/bin/start-cluster.sh
+
+
+/usr/local/flink-1.7.2/bin/start-cluster.sh
+Starting cluster.
+Starting standalonesession daemon on host node-200.
+Starting taskexecutor daemon on host node-197.
+Starting taskexecutor daemon on host node-198.
+Starting taskexecutor daemon on host node-199.
+
+
+masters
+
+jps | grep -w StandaloneSessionClusterEntrypoint
+4699 StandaloneSessionClusterEntrypoint
+
+
+slaves
+jps  | grep -w TaskManagerRunner
+19577 TaskManagerRunner
+
+
+
+http://172.16.101.200:8081
+
+
+Standalone  HA
+对于 Standalone 来说，Flink 必须依赖于 Zookeeper 来实现 JobManager 的 HA
+
+flink-conf.yaml
+
+
+jobmanager.rpc.address: node-200  // node-199 is no-199
+
+high-availability: zookeeper
+high-availability.zookeeper.quorum: node-196:2181,node-197:2181,node-198:2181
+high-availability.storageDir: hdfs:///flink/ha/
+high-availability.zookeeper.path.root: /flink
+high-availability.cluster-id: /flinkCluster
+state.backend: filesystem
+state.checkpoints.dir: hdfs:///flink/checkpoints
+state.savepoints.dir: hdfs:///flink/checkpoints
+
+
+
+
+
+
+cat masters 
+node-200:8081
+node-199:8081
+
+
+cat slaves 
+node-197
+node-198
+
+
+zoo.cfg
+
+server.1=node-196:2888:3888
+server.2=node-197:2888:3888
+server.3=node-198:2888:3888
+
+
+
+scp /usr/local/flink-1.7.2/conf/*  root@node-197:/usr/local/flink-1.7.2/conf/
+scp /usr/local/flink-1.7.2/conf/*  root@node-198:/usr/local/flink-1.7.2/conf/
+scp /usr/local/flink-1.7.2/conf/*  root@node-199:/usr/local/flink-1.7.2/conf/
+
+
+/usr/local/flink-1.7.2/bin/stop-cluster.sh 
+No taskexecutor daemon (pid: 19577) is running anymore on node-197.
+No taskexecutor daemon (pid: 21636) is running anymore on node-198.
+Stopping standalonesession daemon (pid: 4699) on host node-200.
+
+
+
+tar xzvf hadoop-2.7.4.tar.gz  -C  /usr/local/
+
+scp node-199:/usr/local/hadoop-2.7.4/etc/hadoop/*   /usr/local/hadoop-2.7.4/etc/hadoop/
+
+
+
+
+export HADOOP_HOME=/usr/local/hadoop-2.7.4
+export HADOOP_CONF_DIR=/usr/local/hadoop-2.7.4/etc/hadoop
+
+source /etc/profile
+
+
+
+/usr/local/flink-1.7.2/bin/start-cluster.sh
+
+
+http://172.16.101.200:8081/#/jobmanager/config
+
+
+
+test ha kill 
+
+
+http://172.16.101.199:8081/#/jobmanager/config
+
+
+./jobmanager.sh start node-200
+
+
+export HADOOP_CLASSPATH=`hadoop classpath`
+
+
+
+
+node-200
+
+chmod 777 /opt/wc.txt
+mkdir  /opt/wcoutput/
+
+
+flink run -m node-199:8081 ./examples/batch/WordCount.jar --input /opt/wcinput/wc.txt --output /opt/wcoutput/
+
+
+node-199  node-199 是master   服务端 客户端 都要可以访问数据  也可以是 hdfs 
+./bin/flink run -m 172.16.101.199:8081 examples/batch/WordCount.jar  --input /opt/flink/hello.txt  --output /opt/flink/output
+
+
+
+NoResourceAvailableException: Could not allocate enough slots within timeout of 300000 ms to run the job. Please make sure that the cluster has enough resources.
+
+
+
+hdfs
+
+flink run -m node21:8081 ./examples/batch/WordCount.jar --input /opt/wcinput/wc.txt --output /opt/wcoutput/
+
+
+touch wc.txt 
+
+echo a b c > wc.txt
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -mkdir -p /user/admin/input/
+
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -put wc.txt /user/admin/input/
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -cat  /user/admin/input/wc.txt
+a b c
+
+
+
+
+
+flink run -m node-199:8081 ./examples/batch/WordCount.jar --input hdfs:///user/admin/input/wc.txt --output hdfs:///user/admin/output2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+对于 Yarn Cluaster 模式来说，Flink 就要依靠 Yarn 本身来对 JobManager 做 HA 了。其实这里完全是 Yarn 的机制。对于 Yarn Cluster 模式来说，JobManager 和 TaskManager 都是被 Yarn 启动在 Yarn 的 Container 中。此时的 JobManager，其实应该称之为 Flink Application Master。也就说它的故障恢复，就完全依靠着 Yarn 中的 ResourceManager（和 MapReduce 的 AppMaster 一样）。由于完全依赖了 Yarn，因此不同版本的 Yarn 可能会有细微的差异。这里不再做深究。
+
+
+
+
+
+
+
+
+四. Yarn Cluster模式
+
+2. 修改环境变量
+export  HADOOP_CONF_DIR= /opt/module/hadoop-2.7.6/etc/hadoop
+
+
+
+https://www.cnblogs.com/frankdeng/p/9400627.html
+
+
+./bin/flink run -m yarn-cluster -yn 2 ./examples/batch/WordCount.jar --input wc.txt --output /opt/
+
+
+
+/bin/flink run -m 172.16.101.199:8081 examples/batch/WordCount.jar  --input /opt/flink/hello.txt  --output /opt/flink/output
+
+
+
+yarn-daemon.sh start proxyserve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,134 @@
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 0600 ~/.ssh/authorized_keys
+
+
+
+
+tar xzvf spark-2.4.4-bin-hadoop2.7.tgz  -C /usr/local/
+
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7/
+
+
+vim /etc/profile
+
+
+
+export SPARK_HOME=/usr/local/spark-2.4.4-bin-hadoop2.7/
+export PATH=$SPARK_HOME/bin:$PATH
+
+source  /etc/profile
+
+
+
+mkdir /opt/hadoop/
+scp 172.16.99.102:/usr/local/hadoop-2.7.4/etc/hadoop/{hadoop-env.sh,core-site.xml,hdfs-site.xml} /opt/hadoop/
+
+
+
+cd /usr/local/spark-2.4.4-bin-hadoop2.7/conf
+
+
+
+cat > spark-env.sh  << EOF
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+export SCALA_HOME=/usr/local/scala-2.11.8
+HADOOP_CONF_DIR=/opt/hadoop/
+SPARK_MASTER_IP=172.16.99.103
+SPARK_MASTER_PORT=7077
+SPARK_MASTER_WEBUI_PORT=8080
+SPARK_WORKER_CORES=1
+SPARK_WORKER_MEMORY=1000m
+SPARK_WORKER_PORT=7078
+SPARK_WORKER_WEBUI_PORT=8081
+SPARK_WORKER_INSTANCES=1
+SPARK_LOCAL_IP=172.16.99.103
+EOF
+
+
+
+cat > slaves << EOF
+172.16.99.103
+EOF
+
+
+
+
+cat > spark-defaults.conf << EOF
+spark.master spark://spark:7077
+EOF
+
+/etc/hosts
+1722.16.99.103 spark
+
+hostnamectl  set-hostname spark
+
+
+
+
+
+./sbin/start-master.sh 
+
+
+
+./sbin/start-slave.sh   必须是域名
+
+Master must be a URL of the form spark://hostname:port
+
+./sbin/stop-master.sh
+
+
+hostnamectl  set-hostname spark
+
+
+./start-all.sh
+
+
+cp core-site.xml   hdfs-site.xml   /usr/local/spark-2.4.4-bin-hadoop2.7/conf/
+
+
+
+http://172.16.99.103:8080/
+
+spark-shell
+scala> :quit
+
+
+master url  域名
+Spark Master at spark://localhost:7077 
+
+
+
+ok  
+./start-slave.sh  spark://spark:7077
+
+
+
+
+redo
+stop-all.sh 
+
+start-master.sh
+start-slave.sh  spark://localhost:7077
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

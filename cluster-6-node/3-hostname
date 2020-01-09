@@ -1,0 +1,17 @@
+ssh root@172.16.101.191  "hostnamectl set-hostname node-191"
+
+ssh root@172.16.101.192  "hostnamectl set-hostname node-192"
+
+ssh root@172.16.101.193  "hostnamectl set-hostname node-193"
+
+ssh root@172.16.101.194  "hostnamectl set-hostname node-194"
+
+ssh root@172.16.101.195  "hostnamectl set-hostname node-195"
+
+ssh root@172.16.101.196  "hostnamectl set-hostname node-196"
+
+ssh root@172.16.101.197  "hostnamectl set-hostname node-197"
+
+ssh root@172.16.101.198  "hostnamectl set-hostname node-198"
+
+

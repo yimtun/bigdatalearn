@@ -1,0 +1,111 @@
+node-191
+
+/etc/my.cnf
+
+validate_password=off
+
+
+
+
+
+
+CREATE DATABASE `hive` DEFAULT CHARSET utf8;
+
+CREATE USER 'hive'@'172.16.101.191' IDENTIFIED BY 'hive';
+
+GRANT ALL PRIVILEGES ON hive.* TO 'hive'@'172.16.101.191' WITH GRANT OPTION;
+
+
+mysql -uhive -h172.16.101.191  -phive
+
+
+
+
+[root@node-191 mysql-connector-java-5.1.44]# cp mysql-connector-java-5.1.44-bin.jar   /usr/local/apache-hive-1.2.2-bin/lib/
+
+
+cat hive-site.xml 
+<configuration>
+	<property>
+		<name>javax.jdo.option.ConnectionURL</name>
+		<value>jdbc:mysql://172.16.101.191:3306/hive?useSSL=false</value>
+	</property>
+	<property>
+		<name>javax.jdo.option.ConnectionDriverName</name>
+		<value>com.mysql.jdbc.Driver</value>
+	</property>
+	<property>
+		<name>javax.jdo.option.ConnectionUserName</name>
+		<value>hive</value>
+	</property>
+	<property>
+		<name>javax.jdo.option.ConnectionPassword</name>
+		<value>hive</value>
+	</property>
+	<property>
+		<name>hive.metastore.schema.verification</name>
+		<value>false</value>
+	</property>
+</configuration>
+
+
+
+/etc/profile
+export HADOOP_PREFIX=/usr/local/hadoop-2.7.4/
+
+
+
+
+[root@node-191 bin]# ./schematool -dbType mysql -initSchema
+Metastore connection URL:	 jdbc:mysql://172.16.101.191:3306/hive?useSSL=false
+Metastore Connection Driver :	 com.mysql.jdbc.Driver
+Metastore connection User:	 hive
+Starting metastore schema initialization to 1.2.0
+Initialization script hive-schema-1.2.0.mysql.sql
+Initialization script completed
+schemaTool completed
+[root@node-191 bin]# 
+
+
+
+
+
+
+
+
+/usr/local/apache-hive-1.2.2-bin/bin/hive
+
+hive> create database test;
+
+
+quit;
+
+
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -ls /user/hive/warehouse/
+Found 1 items
+drwxr-xr-x   - root supergroup          0 2019-09-29 16:05 /user/hive/warehouse/test.db
+
+
+
+
+
+4，启动服务 (快照 hive+mysql　　ok)
+
+cd $HIVE_HOME/bin
+hive --service metastore &
+hive --service hiveserver2&
+./hive
+
+
+Hadoop三大组件：
+分布式文件系统：HDFS —— 实现将文件分布式存储在很多的服务器上
+分布式运算编程框架：MapReduce——实现多台机器的分布式并行运算。
+分布式资源调度平台：YARN —— 帮用户调度大量的mapreduce程序，并合理分配运算资源
+
+
+
+cd $HIVE_HOME/bin
+hive --service metastore &
+hive --service hiveserver2&
+./hive

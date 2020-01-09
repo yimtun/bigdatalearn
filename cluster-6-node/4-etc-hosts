@@ -1,0 +1,27 @@
+cat > /tmp/hosts <<  EOF
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+172.16.101.191  node-191
+172.16.101.192  node-192
+172.16.101.193  node-193
+172.16.101.194  node-194
+172.16.101.195  node-195
+172.16.101.196  node-196
+172.16.101.197  node-197
+172.16.101.198  node-198
+172.16.101.199  node-199
+172.16.101.200  node-200
+EOF
+
+
+
+scp /tmp/hosts  root@172.16.101.191:/etc/
+scp /tmp/hosts  root@172.16.101.192:/etc/
+scp /tmp/hosts  root@172.16.101.193:/etc/
+scp /tmp/hosts  root@172.16.101.194:/etc/
+scp /tmp/hosts  root@172.16.101.195:/etc/
+scp /tmp/hosts  root@172.16.101.196:/etc/
+scp /tmp/hosts  root@172.16.101.197:/etc/
+scp /tmp/hosts  root@172.16.101.198:/etc/
+scp /tmp/hosts  root@172.16.101.199:/etc/
+scp /tmp/hosts  root@172.16.101.200:/etc/

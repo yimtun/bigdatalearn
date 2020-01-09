@@ -1,0 +1,14 @@
+ssh root@172.16.101.191 "ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa"
+
+
+
+172.16.101.191 on
+
+ssh-copy-id node-191
+ssh-copy-id node-192
+ssh-copy-id node-193
+ssh-copy-id node-194
+ssh-copy-id node-195
+ssh-copy-id node-196
+ssh-copy-id node-197
+ssh-copy-id node-198

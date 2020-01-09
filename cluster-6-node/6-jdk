@@ -1,0 +1,33 @@
+https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html
+
+
+
+tar xzvf jdk-8u144-linux-x64.tar.gz  -C /usr/local/
+
+
+vim  /etc/profile
+export  JAVA_HOME=/usr/local/jdk1.8.0_144
+export  PATH=$PATH:$JAVA_HOME/bin:$JAVA_HOME/sbin
+
+
+
+source  /etc/profile
+
+
+java -version
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,38 @@
+172.16.101.45
+
+rpm -ivh jdk-8u201-linux-x64.rpm
+
+tar xzvf flink-1.7.2-bin-hadoop27-scala_2.11.tgz  -C /usr/local/
+
+mkdir -p /usr/local/hadoop-2.7.4/etc/hadoop/
+scp 172.16.101.41:/usr/local/hadoop-2.7.4/etc/hadoop/*   /usr/local/hadoop-2.7.4/etc/hadoop/
+
+
+export HADOOP_CONF_DIR=/usr/local/hadoop-2.7.4/etc/hadoop
+
+
+
+
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+source  /etc/profile
+
+
+
+
+
+
+yarn-session.sh
+
+会出现数据
+http://172.16.101.41:8088
+
+
+
+./flink run -m yarn-cluster -p 4 -yjm 1024m -ytm 4096m ./examples/batch/WordCount.jar
+
+
+./flink run -m yarn-cluster -p 4 -yjm 1024m -ytm 4096m ../examples/batch/WordCount.jar
+
+
+

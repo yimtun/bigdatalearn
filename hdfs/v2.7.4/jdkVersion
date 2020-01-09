@@ -1,0 +1,39 @@
+https://cwiki.apache.org/confluence/display/HADOOP2/HadoopJavaVersions
+
+
+
+Hadoop Java Versions
+
+Version 2.7 and later of Apache Hadoop requires Java 7. It is built and tested on both OpenJDK and Oracle (HotSpot)'s JDK/JRE.
+
+Earlier versions (2.6 and earlier) support Java 6.
+
+
+url 
+
+https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html
+
+
+
+Here are the known JDKs in use or which have been tested:
+
+oracle 1.7.0_15
+oracle 1.7.0_21 
+oracle 1.7.0_45 
+
+
+https://download.oracle.com/otn/java/jdk/7u45-b18/jdk-7u45-linux-x64.rpm
+https://download.oracle.com/otn/java/jdk/7u45-b18/jdk-7u45-linux-x64.tar.gz
+
+
+
+wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie"    \
+https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.rpm   -P /opt/
+
+
+
+
+
+
+
+

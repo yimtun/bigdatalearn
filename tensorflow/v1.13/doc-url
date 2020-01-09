@@ -1,0 +1,54 @@
+https://pypi.tuna.tsinghua.edu.cn/simple/tensorflow/
+
+
+https://blog.csdn.net/superyzh/article/details/79471428
+
+
+
+wget https://pypi.tuna.tsinghua.edu.cn/packages/d7/34/854134bf4dc0e04c3b1ce18dacd51310972d0432e975b5ffd5e9376bf690/tensorflow-1.13.0rc2-cp35-cp35m-manylinux1_x86_64.whl#sha256=0782d2e7fdd2ce39c4b5260c9cd42a89b8f11b10f7ec92e6bf81eae5aa88df85
+
+
+
+wget https://pypi.tuna.tsinghua.edu.cn/packages/d2/ea/ab2c8c0e81bd051cc1180b104c75a865ab0fc66c89be992c4b20bbf6d624/tensorflow-1.13.1-cp27-cp27mu-manylinux1_x86_64.whl#sha256=f21fb65c8e874f40c654bc9b3ff3db3ec26f98f03fe64a541bc768f6f5c52ac2
+
+
+
+tensorflow-1.13.0rc2-cp35-cp35m-manylinux1_x86_64.whl
+
+
+
+yum -y install epel-release
+
+
+f40c654bc9b3ff3db3ec26f98f03fe64a541bc768f6f5c52ac2
+
+
+
+tensorflow-1.13.0rc2-cp35-cp35m-manylinux1_x86_64.whl
+
+
+
+yum -y install epel-release
+
+yum -y install python-pip
+
+
+
+pip2.7  install tensorflow-1.13.1-cp27-cp27mu-manylinux1_x86_64.whl
+pip2.7  install tensorflow-1.13.1-cp27-cp27mu-manylinux1_x86_64.whl -i 
+
+
+
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple  tensorflow-1.13.1-cp27-cp27mu-manylinux1_x86_64.whl
+
+
+
+wget https://pypi.tuna.tsinghua.edu.cn/packages/d4/29/6b4f1e02417c3a1ccc85380f093556ffd0b35dc354078074c5195c8447f2/tensorflow-1.13.1-cp37-cp37m-manylinux1_x86_64.whl#sha256=c41862c65628261229db22e33f9e570d845eeb5cea66dcbaebe404405edaa69b
+
+
+
+
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple tensorflow-1.13.1-cp37-cp37m-manylinux1_x86_64.whl 
+
+
+

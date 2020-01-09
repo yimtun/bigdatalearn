@@ -1,0 +1,19 @@
+wget  https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz
+
+
+tar -zxvf scala-2.11.8.tgz -C /usr/local/
+
+
+
+
+vim /etc/profile
+export SCALA_HOME=/usr/local/scala-2.11.8
+export PATH=$PATH:$SCALA_HOME/bin
+
+
+source /etc/profile
+
+
+
+scala -version
+

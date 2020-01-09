@@ -1,0 +1,16 @@
+rpm -ivh jdk-8u201-linux-x64.rpm
+
+java -version
+
+
+vim /etc/profile
+
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+export PATH=$PATH:$JAVA_HOME/bin
+
+
+
+
+
+

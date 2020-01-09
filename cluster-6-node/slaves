@@ -1,0 +1,43 @@
+Slaves
+通常，你选择集群中的一台机器作为NameNode，另外一台不同的机器作为JobTracker。余下的机器即作为DataNode又作为TaskTracker，这些被称之为slaves。
+
+在conf/slaves文件中列出所有slave的主机名或者IP地址，一行一个。
+
+
+
+
+
+启动Hadoop
+
+启动Hadoop集群需要启动HDFS集群和Map/Reduce集群。
+
+格式化一个新的分布式文件系统：
+$ bin/hadoop namenode -format
+
+在分配的NameNode上，运行下面的命令启动HDFS：
+$ bin/start-dfs.sh
+
+bin/start-dfs.sh脚本会参照NameNode上${HADOOP_CONF_DIR}/slaves文件的内容，
+
+在所有列出的slave上启动DataNode守护进程。
+
+
+
+
+
+
+在分配的JobTracker上，运行下面的命令启动Map/Reduce：
+$ bin/start-mapred.sh
+
+bin/start-mapred.sh脚本会参照JobTracker上${HADOOP_CONF_DIR}/slaves文件的内容，在所有列出的slave上启动TaskTracker守护进程。
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,43 @@
+namenode
+node-191
+node-192
+
+datanode
+node-195
+node-196
+
+
+
+resourcemanager
+node-193
+node-194
+
+
+
+nodemanager
+node-195
+node-196
+
+
+
+
+nodemanager  datanode  运行在一个节点
+
+
+
+journalnode
+node-196 node-197 node-198
+
+
+zookeeper
+node-196 node-197 node-198
+
+
+
+
+
+
+
+
+
+

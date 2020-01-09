@@ -1,0 +1,322 @@
+1 启动 journalnode
+
+node-196 node-197 node-198
+
+
+/usr/local/hadoop-2.7.4/sbin/hadoop-daemon.sh start journalnode
+
+
+jps
+12736 JournalNode
+11474 QuorumPeerMain
+
+QuorumPeerMain  随机 ?
+JournalNode    8480 8485
+
+
+2 node-191
+
+hdfs namenode -format
+
+
+/usr/local/hadoop-2.7.4/bin/hdfs namenode -format
+echo $?
+0
+
+
+
+
+/usr/local/hadoop-2.7.4/sbin/hadoop-daemon.sh start namenode
+
+scp -r /opt/hadoop  node-192:/opt/
+
+
+node-192
+
+
+
+/usr/local/hadoop-2.7.4/bin/hdfs  namenode -bootstrapStandby
+y
+
+jps no
+
+
+/usr/local/hadoop-2.7.4/bin/hdfs  namenode -initializeSharedEdits
+
+
+node-191
+
+/usr/local/hadoop-2.7.4/bin/hdfs  zkfc -formatZK
+
+
+
+datanode
+node-195
+node-196
+
+
+/usr/local/hadoop-2.7.4/sbin/start-dfs.sh
+
+[root@node-191 name]# /usr/local/hadoop-2.7.4/sbin/start-dfs.sh
+Starting namenodes on [node-191 node-192]
+node-191: namenode running as process 12610. Stop it first.
+node-192: starting namenode, logging to /usr/local/hadoop-2.7.4/logs/hadoop-root-namenode-node-192.out
+node-196: starting datanode, logging to /usr/local/hadoop-2.7.4/logs/hadoop-root-datanode-node-196.out
+node-195: starting datanode, logging to /usr/local/hadoop-2.7.4/logs/hadoop-root-datanode-node-195.out
+Starting journal nodes [node-196 node-197 node-198]
+node-198: journalnode running as process 11999. Stop it first.
+node-197: journalnode running as process 11971. Stop it first.
+node-196: journalnode running as process 12736. Stop it first.
+Starting ZK Failover Controllers on NN hosts [node-191 node-192]
+node-191: starting zkfc, logging to /usr/local/hadoop-2.7.4/logs/hadoop-root-zkfc-node-191.out
+node-192: starting zkfc, logging to /usr/local/hadoop-2.7.4/logs/hadoop-root-zkfc-node-192.out
+
+
+查看 node-195 node-196
+
+jps | grep DataNode
+11592 DataNode
+
+
+Yarn 启动
+
+node-193
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+ssh-copy-id node-195
+ssh-copy-id node-196
+
+
+/usr/local/hadoop-2.7.4/sbin/start-yarn.sh
+
+
+node-194
+
+/usr/local/hadoop-2.7.4/sbin/yarn-daemon.sh start resourcemanager
+
+
+
+
+
+
+
+http://172.16.101.191:50070
+'node-191:9000' (active)
+
+http://172.16.101.192:50070
+'node-192:9000' (standby)
+
+
+node-191 测试上传文件
+
+/usr/local/hadoop-2.7.4/bin/hadoop fs -put /etc/profile /profile
+
+/usr/local/hadoop-2.7.4/bin/hadoop  fs -ls /
+Found 1 items
+-rw-r--r--   1 root supergroup       1911 2019-09-27 18:26 /profile
+
+测试namenode ha
+
+[root@node-191 name]# jps
+12610 NameNode
+13498 Jps
+13231 DFSZKFailoverController
+[root@node-191 name]# kill -9 12610
+[root@node-191 name]# jps
+13513 Jps
+13231 DFSZKFailoverController
+
+
+
+http://172.16.101.192:50070
+ 'node-192:9000' (active)
+
+
+访问文件依然存在
+[root@node-191 name]# /usr/local/hadoop-2.7.4/bin/hadoop  fs -ls /
+Found 1 items
+-rw-r--r--   1 root supergroup       1911 2019-09-27 18:26 /profile
+
+
+启动 node-191 namenode
+/usr/local/hadoop-2.7.4/sbin/hadoop-daemon.sh start namenode
+
+172.16.101.191:50070/dfshealth.html#tab-overview
+
+'node-191:9000' (standby)
+
+
+
+
+验证 yarn
+cd /usr/local/hadoop-2.7.4/bin
+
+./hadoop  jar ../share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.4.jar  wordcount /profile /out
+
+
+output
+
+
+
+19/09/27 18:34:13 INFO mapreduce.Job: Counters: 49
+	File System Counters
+		FILE: Number of bytes read=2193
+		FILE: Number of bytes written=250987
+		FILE: Number of read operations=0
+		FILE: Number of large read operations=0
+		FILE: Number of write operations=0
+		HDFS: Number of bytes read=2000
+		HDFS: Number of bytes written=1560
+		HDFS: Number of read operations=6
+		HDFS: Number of large read operations=0
+		HDFS: Number of write operations=2
+	Job Counters 
+		Launched map tasks=1
+		Launched reduce tasks=1
+		Data-local map tasks=1
+		Total time spent by all maps in occupied slots (ms)=2809
+		Total time spent by all reduces in occupied slots (ms)=3323
+		Total time spent by all map tasks (ms)=2809
+		Total time spent by all reduce tasks (ms)=3323
+		Total vcore-milliseconds taken by all map tasks=2809
+		Total vcore-milliseconds taken by all reduce tasks=3323
+		Total megabyte-milliseconds taken by all map tasks=2876416
+		Total megabyte-milliseconds taken by all reduce tasks=3402752
+	Map-Reduce Framework
+		Map input records=78
+		Map output records=257
+		Map output bytes=2689
+		Map output materialized bytes=2193
+		Input split bytes=89
+		Combine input records=257
+		Combine output records=157
+		Reduce input groups=157
+		Reduce shuffle bytes=2193
+		Reduce input records=157
+		Reduce output records=157
+		Spilled Records=314
+		Shuffled Maps =1
+		Failed Shuffles=0
+		Merged Map outputs=1
+		GC time elapsed (ms)=131
+		CPU time spent (ms)=1880
+		Physical memory (bytes) snapshot=441016320
+		Virtual memory (bytes) snapshot=4228096000
+		Total committed heap usage (bytes)=317718528
+	Shuffle Errors
+		BAD_ID=0
+		CONNECTION=0
+		IO_ERROR=0
+		WRONG_LENGTH=0
+		WRONG_MAP=0
+		WRONG_REDUCE=0
+	File Input Format Counters 
+		Bytes Read=1911
+	File Output Format Counters 
+		Bytes Written=1560
+
+
+
+http://172.16.101.193:8088/cluster
+
+application_1569579607796_0001
+
+
+FINISHED SUCCEEDED
+
+
+
+curl  172.16.101.194:8088/cluster
+This is standby RM. The redirect url is: http://node-193:8088/cluster
+
+curl  172.16.101.193:8088/cluster  可以
+
+kill node-193  ResourceManager
+
+[root@node-193 ~]# jps
+12037 Jps
+11543 ResourceManager
+[root@node-193 ~]# kill -9 11543
+[root@node-193 ~]# jps
+12053 Jps
+[root@node-193 ~]# 
+
+
+
+[root@node-193 ~]# curl  172.16.101.194:8088/cluster  可以访问
+
+
+
+再次提价yarn 
+
+
+./hadoop  jar ../share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.4.jar  wordcount /profile /test-yarn-ha
+
+
+作业完成
+
+
+
+启动 node-193 ResourceManager
+
+
+/usr/local/hadoop-2.7.4/sbin/yarn-daemon.sh start resourcemanager
+
+
+[root@node-193 ~]# /usr/local/hadoop-2.7.4/sbin/yarn-daemon.sh start resourcemanager
+starting resourcemanager, logging to /usr/local/hadoop-2.7.4/logs/yarn-root-resourcemanager-node-193.out
+[root@node-193 ~]# jps
+12114 ResourceManager
+12159 Jps
+[root@node-193 ~]# curl  172.16.101.193:8088
+This is standby RM. The redirect url is: http://node-194:8088/
+
+
+yarn ha 测试完成
+
+url 
+
+https://blog.csdn.net/u014182745/article/details/78381472
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

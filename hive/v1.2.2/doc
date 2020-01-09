@@ -1,0 +1,9 @@
+https://hive.apache.org/
+
+
+https://cwiki.apache.org/confluence/display/Hive/GettingStarted
+
+
+tar -xzvf apache-hive-1.2.2-src.tar.gz -C /usr/local
+
+

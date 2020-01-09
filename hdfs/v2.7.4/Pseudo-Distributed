@@ -1,0 +1,259 @@
+system tool install
+
+yum -y install vim wget net-tools lsof
+
+
+
+yum -y install rsync
+
+wget  https://archive.apache.org/dist/hadoop/common/hadoop-2.7.4/hadoop-2.7.4.tar.gz   -P  /opt/
+
+rpm -ivh jdk-8u201-linux-x64.rpm
+
+tar xf hadoop-2.7.4.tar.gz -C /usr/local/
+
+
+
+
+vim /usr/local/hadoop-2.7.4/etc/hadoop/hadoop-env.sh
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+
+
+
+
+vim /etc/profile
+export HADOOP_PREFIX=/usr/local/hadoop-2.7.4/
+export PATH=$PATH:$HADOOP_PREFIX/bin:$HADOOP_PREFIX/sbin
+export HADOOP_COMMON_HOME=${HADOOP_PREFIX}
+export HADOOP_HDFS_HOME=${HADOOP_PREFIX}
+export HADOOP_MAPRED_HOME=${HADOOP_PREFIX}
+export HADOOP_YARN_HOME=${HADOOP_PREFIX}
+
+
+
+source  /etc/profile
+
+
+
+------------
+
+define dirpath
+namenode、datanode、secondarynamenode
+--------------
+
+
+mkdir -pv /opt/hadoop/{namenode,secondarynamenode,datanode}
+
+
+
+NameNode setting  port 9000
+
+cat > /usr/local/hadoop-2.7.4/etc/hadoop/core-site.xml << EOF
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://172.16.99.102:9000</value>
+    </property>
+</configuration>
+EOF
+
+
+
+
+settinig hdfs 
+
+cat >   /usr/local/hadoop-2.7.4/etc/hadoop/hdfs-site.xml << EOF
+<configuration>
+    <property>
+<name>dfs.replication</name>
+<value>1</value>
+    </property>
+
+
+    <property>
+<name>dfs.namenode.name.dir</name>
+<value>file:///opt/hadoop/namenode</value>
+    </property>
+
+
+    <property>
+<name>dfs.datanode.data.dir</name>
+<value>file:///opt/hadoop/datanode</value>
+    </property>
+
+    <property>
+<name>fs.checkpoint.dir</name>
+<value>file:///opt/hadoop/secondarynamenode</value>
+    </property>
+
+    <property>
+<name>fs.checkpoint.edits.dir</name>
+<value>file:///opt/hadoop/secondarynamenode</value>
+    </property>
+
+
+<property>
+  <name>dfs.permissions</name>
+  <value>false</value>
+</property>
+
+<property> 
+<name>dfs.webhdfs.enabled</name> 
+<value>true</value> 
+</property>
+
+</configuration>
+
+
+EOF
+
+
+
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 0600 ~/.ssh/authorized_keys
+
+ssh 172.16.99.102
+
+setting yarn
+
+
+cat >  /usr/local/hadoop-2.7.4/etc/hadoop/mapred-site.xml << EOF
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+</configuration>
+EOF
+
+
+
+cat > /usr/local/hadoop-2.7.4/etc/hadoop/yarn-site.xml  << EOF
+<configuration>
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+</configuration>
+EOF
+
+
+
+
+start-yarn.sh 
+starting yarn daemons
+resourcemanager running as process 11083. Stop it first.
+localhost: starting nodemanager, logging to /usr/local/hadoop-2.7.4/logs/yarn-root-nodemanager-localhost.localdomain.out
+
+jps
+11648 Jps
+11537 NodeManager
+11083 ResourceManager 
+
+netstat -tnlp |grep java
+tcp6       0      0 :::8040                 :::*                    LISTEN      13790/java          
+tcp6       0      0 :::8042                 :::*                    LISTEN      13790/java          
+tcp6       0      0 :::41107                :::*                    LISTEN      13790/java          
+tcp6       0      0 :::8088                 :::*                    LISTEN      13569/java          
+tcp6       0      0 :::13562                :::*                    LISTEN      13790/java          
+tcp6       0      0 :::8030                 :::*                    LISTEN      13569/java          
+tcp6       0      0 :::8031                 :::*                    LISTEN      13569/java          
+tcp6       0      0 :::8032                 :::*                    LISTEN      13569/java          
+tcp6       0      0 :::8033                 :::*                    LISTEN      13569/java  
+
+
+
+NodeManager      8040 8042 41107 13562
+ResourceManager  8088 8030 8031 8032 8033
+
+http://172.16.99.102:8088
+
+
+
+
+
+
+
+hdfs namenode -format
+start-dfs.sh
+
+jps
+13569 ResourceManager
+15987 SecondaryNameNode
+16411 Jps
+15708 NameNode
+13790 NodeManager
+15839 DataNode
+
+
+SecondaryNameNode 50090 
+NameNode          50070 9000
+DataNode          50010 50075 43133 50020 
+
+
+http://172.16.99.102:50070
+
+
+over 
+
+--------------------------------------
+
+bin/hadoop fs -rm -r output
+
+
+
+
+bin/hdfs dfs -mkdir -p /input
+
+bin/hdfs dfs -put test  /input
+
+
+bin/hdfs dfs -put etc/hadoop input
+bin/hdfs dfs -put etc/hadoop /input
+OK
+
+
+bin/hdfs dfs -mkdir input
+
+
+bin/hdfs dfs -put etc/hadoop input
+
+
+ok
+[root@localhost hadoop-2.7.4]# bin/hdfs dfs -mkdir -p input
+[root@localhost hadoop-2.7.4]# bin/hdfs dfs -put etc/hadoop input
+[root@localhost hadoop-2.7.4]# 
+
+
+6 Run some of the examples provided:
+
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.4.jar grep input output 'dfs[a-z.]+'
+
+
+7 Examine the output files: Copy the output files from the distributed filesystem to the local filesystem and examine them:
+
+bin/hdfs dfs -get output output
+
+cat output/*
+
+bin/hdfs dfs -cat output/*
+cat: `output/output': No such file or directory
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,83 @@
+172.16.101.44
+
+
+scp /usr/local/hadoop-2.7.4/etc/hadoop/hdfs-site.xml   172.16.101.44:/usr/local/hbase-2.0.6/conf/
+scp /usr/local/hadoop-2.7.4/etc/hadoop/core-site.xml    172.16.101.44:/usr/local/hbase-2.0.6/conf/
+
+
+
+
+rpm -ivh jdk-8u201-linux-x64.rpm
+
+
+tar xzvf hbase-2.0.6-bin.tar.gz -C   /usr/local/
+
+cd /usr/local/hbase-2.0.6/
+
+vim /usr/local/hbase-2.0.6/conf/hbase-env.sh
+
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+
+
+cat > /usr/local/hbase-2.0.6/conf/hbase-site.xml << EOF
+<configuration>
+<property>
+  <name>hbase.cluster.distributed</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hbase.rootdir</name>
+  <value>hdfs://172.16.101.41:9000/hbase</value>
+</property>
+</configuration>
+EOF
+
+
+/usr/local/hbase-2.0.6/bin/start-hbase.sh
+
+
+hadoop fs -ls  /
+
+
+hadoop fs -ls  /
+Found 2 items
+drwxr-xr-x   - root supergroup          0 2019-09-26 16:45 /hbase
+drwx-wx-wx   - root supergroup          0 2019-09-26 15:45 /user
+
+
+
+http://172.16.101.44:16010
+
+
+
+./bin/local-master-backup.sh start 2 3 5
+
+./bin/local-regionservers.sh start 2 3 4 5
+
+
+
+
+
+
+
+
+http://172.16.101.44:16010
+
+
+
+
+./bin/local-master-backup.sh start 2 3 5
+
+./bin/local-regionservers.sh start 2 3 4 5
+
+
+
+删除hdfs 数据 重新格式化
+
+
+
+
+
+

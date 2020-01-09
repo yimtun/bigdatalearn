@@ -1,0 +1,78 @@
+https://flink.apache.org/zh/downloads.html
+
+
+
+
+
+
+
+export HADOOP_CLASSPATH=`hadoop classpath`
+
+
+https://archive.apache.org/dist/flink/flink-1.9.0/
+
+
+wget  https://archive.apache.org/dist/flink/flink-1.9.0/flink-1.9.0-bin-scala_2.11.tgz
+
+
+tar -zxvf flink-1.9.0-bin-scala_2.11.tgz  -C /usr/local/
+
+
+https://www.okcode.net/article/27076
+
+
+wget http://mirrors.tuna.tsinghua.edu.cn/apache/flink/flink-1.9.0/flink-1.9.0-bin-scala_2.11.tgz
+
+
+
+cd /usr/local/flink-1.9.0/
+
+
+
+
+经试验发现，其实如果配置的有HADOOP_HOME环境变量的话也是可以的。
+
+HADOOP_HOME ，YARN_CONF_DIR，HADOOP_CONF_DIR 只要配置的有任何一个即可。
+
+
+
+bin/start-cluster.sh
+Starting cluster.
+
+Starting standalonesession daemon on host spark.
+Starting taskexecutor daemon on host spark.
+[root@spark flink-1.9.0]# 
+[root@spark flink-1.9.0]# 
+[root@spark flink-1.9.0]# jps
+12516 Worker
+19188 TaskManagerRunner
+18743 StandaloneSessionClusterEntrypoint
+19255 Jps
+12440 Master
+12602 SparkSubmit
+
+
+
+YARN_CONF_DIR
+
+
+
+
+
+wget http://mirrors.tuna.tsinghua.edu.cn/apache/flink/flink-1.7.2/flink-1.7.2-bin-hadoop27-scala_2.11.tgz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

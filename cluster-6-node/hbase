@@ -1,0 +1,201 @@
+HBase由三个部分，如下
+
+1. HMaster
+
+对Region进行负载均衡，分配到合适的HRegionServer
+
+2. ZooKeeper
+
+选举HMaster，对HMaster，HRegionServer进行心跳检测（貌似是这些机器节点向ZooKeeper上报心跳）
+
+3. HRegionServer
+
+数据库的分片，HRegionServer上的组成部分如下:
+
+Region：HBase中的数据都是按row-key进行排序的，对这些按row-key排序的数据进行水平切分，每一片称为一个Region，它有startkey和endkey，Region的大小可以配置，一台RegionServer中可以放多个Region
+————————————————
+版权声明：本文为CSDN博主「数据架构师」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/luanpeng825485697/article/details/80319552
+
+Hbase 架构的组件
+
+Region Server：提供数据的读写服务，当客户端访问数据时，直接和Region Server通信。
+HBase Master:Region的分配,.DDL操作（创建表,删除表）
+Zookeeper:分布式管理工具，维护一个活跃的集群状态
+
+
+Hadoop DataNode存储着Region Server 管理的数据，所有的Hbase数据存储在HDFS文件系统中，Region Servers在HDFS DataNode中是可配置的，并使数据存储靠近在它所需要的地方，就近服务，当王HBASE写数据时是Local的，但是当一个region 被移动之后，Hbase的数据就不是Local的，除非做了压缩（compaction）操作。NameNode维护物理数据块的元数据信息。
+————————————————
+版权声明：本文为CSDN博主「数据架构师」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/luanpeng825485697/article/details/80319552
+
+
+
+
+
+
+
+----------------------------------------------------------------------
+
+Master：Hbase的主节点（集群中的某一台服务器），协调客户端应用程序与RegionServer的关系，监控和记录元数据的变化和管理。
+
+RegionServer：是Hbase的从节点，用region形式处理实际的表。Region是Hbase表的基础单元组件，存储了分布式表。
+Hbase集群利用Master和RegionServer来协同工作。
+
+Zookeeper：在Hbase中，选举集群主节点Master，以便跟踪可用的在线服务器，同时维护集群的元数据。
+一般安装多个，用于提供Master的高可用性
+
+Clinet：使用HBase RPC机制与Master和RegionServer通信。对于管理类操作（DDL操作）与Master通信，对于数据读写类操作与RegionServer通信。
+通常情况下，Master和Hadoop的Namenode进程运行在同一主机上，与Datanode通信以读写Hdfs，RegionServer和Hadoop的datanode运行在同一台主机上。
+
+
+HBase具有可扩展性的原因：
+
+读取hdfs的数据，hdfs的扩展可以通过datanode的增加完成；
+一个表的数据分成多个区域Region，每个区域都有一个专门的RegionServer负责数据管理及检索，
+而RegionServer像datanode一样可以随意增加（RegionServer运行在Datanode的机器上，可以和datanode一样多）。
+
+-----------------------------------------------------------
+
+
+
+hmaster       node-199
+backuphmaster node-192
+
+HRegionServer   node-196  node-197  node-198
+
+[root@node-191 opt]#
+
+tar xzvf  hbase-2.0.6-bin.tar.gz  -C /usr/local/
+
+
+hbase-env.sh
+export HBASE_MANAGES_ZK=false
+JAVA_HOME=/usr/local/jdk1.8.0_144
+
+
+
+hbase-site.xml
+<configuration>
+    <!-- 指定hbase在HDFS上存储的路径 -->
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://mycluster/hbase</value>
+    </property>
+    <!-- 指定hbase是分布式的 -->
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+    </property>
+    <!-- 指定zk的地址，多个用“,”分割 -->
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>node-196:2181,node-197:2181,node-198:2181</value>
+    </property>
+    <property>
+        <name>hbase.master.info.port</name>
+        <value>60010</value>
+    </property>
+</configuration>
+
+
+
+cp /usr/local/hadoop-2.7.4/etc/hadoop/hdfs-site.xml   /usr/local/hbase-2.0.6/conf/
+
+
+cat regionservers 
+node-196
+node-197
+node-198
+
+
+cat backup-masters
+node-192
+
+
+
+./hbase-daemon.sh start master
+
+[root@node-191 local]# /usr/local/hadoop-2.7.4/bin/hadoop  fs -ls /   | grep hbase
+drwxr-xr-x   - root supergroup          0 2019-09-27 21:57 /hbase
+
+
+http://172.16.101.199:60010/master-status
+
+
+启动
+backuphmaster
+
+[root@node-199 conf]# scp /usr/local/hbase-2.0.6/conf/*     node-192:/usr/local/hbase-2.0.6/conf/
+
+node-192
+
+./hbase-daemon.sh start master --backup
+
+tail -f ../logs/hbase-root-master-node-192.log 
+2019-09-27 22:09:11,120 INFO  [main] master.HMaster: hbase.rootdir=hdfs://mycluster/hbase, hbase.cluster.distributed=true
+2019-09-27 22:09:11,147 INFO  [Thread-13] master.HMaster: Adding backup master ZNode /hbase/backup-masters/node-192,16000,1569593348145
+2019-09-27 22:09:11,181 INFO  [master/node-192:16000] regionserver.HRegionServer: ClusterId : 0791a8ef-18b0-449a-af7f-8a46fdcdf6f7
+2019-09-27 22:09:11,224 INFO  [Thread-13] master.ActiveMasterManager: Another master is the active master, node-199,16000,1569592634587; waiting to become the next active master
+
+
+
+启动
+regionservers
+
+[root@node-199 conf]# scp /usr/local/hbase-2.0.6/conf/*     node-196:/usr/local/hbase-2.0.6/conf/
+[root@node-199 conf]# scp /usr/local/hbase-2.0.6/conf/*     node-197:/usr/local/hbase-2.0.6/conf/
+[root@node-199 conf]# scp /usr/local/hbase-2.0.6/conf/*     node-198:/usr/local/hbase-2.0.6/conf/
+
+node-196 node-197 node-198 
+
+
+./hbase-daemon.sh start regionserver
+
+jps | grep HRegionServer
+13594 HRegionServer
+
+
+test ha 
+
+node-199
+
+./hbase-daemon.sh stop master
+
+
+node-192 提升为master
+http://172.16.101.192:60010/master-status
+
+
+
+启动node-199   
+
+./hbase-daemon.sh start  master
+
+node-199 变为backup 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

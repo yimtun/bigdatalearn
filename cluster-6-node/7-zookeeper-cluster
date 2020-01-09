@@ -1,0 +1,88 @@
+172.16.101.196  node-196
+172.16.101.197  node-197
+172.16.101.198  node-198
+
+
+
+wget http://mirror.bit.edu.cn/apache/zookeeper/zookeeper-3.4.14/zookeeper-3.4.14.tar.gz
+
+
+
+
+
+tar xzvf zookeeper-3.4.14.tar.gz   -C /usr/local/
+
+
+
+
+export ZOOKEEPER_HOME=/usr/local/zookeeper-3.4.14
+export PATH=$PATH:$ZOOKEEPER_HOME/bin
+
+source  /etc/profile
+
+
+
+
+mkdir -p /zookeeper/data/
+mkdir -p /zookeeper/logs
+
+
+touch /zookeeper/data/myid
+
+
+echo 1 > /zookeeper/data/myid
+
+
+
+cat > /usr/local/zookeeper-3.4.14/conf/zoo.cfg  << EOF
+tickTime=2000
+initLimit=10
+syncLimit=5
+clientPort=2181
+dataDir=/zookeeper/data
+dataLogDir=/zookeeper/logs
+server.1=node-196:2888:3888
+server.2=node-197:2888:3888
+server.3=node-198:2888:3888
+EOF
+
+
+
+zkServer.sh start
+
+
+
+zkServer.sh  status
+
+
+
+zkCli.sh   -server node-196
+zkCli.sh   -server node-197
+zkCli.sh   -server node-198
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,13 @@
+node-191
+
+scp /usr/local/hadoop-2.7.4/etc/hadoop/*    node-192:/usr/local/hadoop-2.7.4/etc/hadoop/
+
+
+node-191  node-192
+
+etc/hadoop/slaves 
+node-195
+node-196
+
+
+

@@ -1,0 +1,249 @@
+https://hbase.apache.org/book.html#quickstart
+
+2.3. Pseudo-Distributed Local Install
+
+
+
+tar xf hbase-2.0.6-bin.tar.gz -C   /usr/local/
+
+cd /usr/local/hbase-2.0.6/
+
+vim /usr/local/hbase-2.0.6/conf/hbase-env.sh
+
+export JAVA_HOME=/usr/java/jdk1.8.0_201-amd64
+
+
+
+
+
+
+1 Stop HBase if it is running
+
+2 Configure HBase
+
+指定 NameNode 端口
+
+lsof -i:9000
+
+
+
+hbase-site.xml 
+
+cat > /usr/local/hbase-2.0.6/conf/hbase-site.xml << EOF
+<configuration>
+<property>
+  <name>hbase.cluster.distributed</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hbase.rootdir</name>
+  <value>hdfs://172.16.99.102:9000/hbase</value>
+</property>
+</configuration>
+EOF
+
+
+
+
+3 Start HBase
+
+bin/start-hbase.sh
+
+
+jps
+
+HMaster and HRegionServer processes running.
+
+
+jps
+13569 ResourceManager
+15987 SecondaryNameNode
+27236 HRegionServer
+27674 Jps
+27115 HMaster
+15708 NameNode
+27053 HQuorumPeer
+13790 NodeManager
+15839 DataNode
+
+
+HMaster        16000 16010 
+HRegionServer  16020 16030
+HQuorumPeer    2181
+
+
+http://172.16.99.102:16010
+
+
+
+
+
+4 Check the HBase directory in HDFS
+
+hadoop fs -ls  /
+
+Found 1 items
+drwxr-xr-x   - root supergroup          0 2019-09-25 11:33 /hbase
+
+
+
+
+
+5 Create a table and populate it with data.
+
+
+1.1 Connect to HBase
+
+./bin/hbase shell
+
+1.2 Display HBase Shell Help Text.
+help
+
+1.3 Create a table.
+
+create 'test', 'cf'
+
+1.4 List Information About your Table
+
+list 'test'
+
+describe 'test'
+
+1.5 Put data into your table.
+
+put 'test', 'row1', 'cf:a', 'value1'
+put 'test', 'row2', 'cf:b', 'value2'
+put 'test', 'row3', 'cf:c', 'value3'
+
+
+1.6 Scan the table for all data at once.
+
+scan 'test'
+
+1.7 Get a single row of data.
+
+get 'test', 'row1'
+
+1.8 Disable a table.
+
+disable 'test'
+enable 'test'
+
+
+1.9 Drop the table.
+
+drop 'test'
+
+1.10 Exit the HBase Shell.
+
+quit
+
+
+
+
+
+
+
+6 Start and stop a backup HBase Master (HMaster) server.
+
+
+The HMaster server controls the HBase cluster. 
+You can start up to 9 backup HMaster servers, which makes 10 total HMasters, counting the primary. 
+To start a backup HMaster, use the local-master-backup.sh. For each backup master you want to start, 
+add a parameter representing the port offset for that master. 
+Each HMaster uses two ports (16000 and 16010 by default). 
+The port offset is added to these ports, so using an offset of 2, 
+the backup HMaster would use ports 16002 and 16012. 
+The following command starts 3 backup servers using ports 16002/16012, 16003/16013, and 16005/16015.
+
+
+启动3个 backup  端口是 16002/16012, 16003/16013, and 16005/16015 
+16000 and 16010  开机计算 端口偏移量设置依次为2 3  5 
+
+
+./bin/local-master-backup.sh start 2 3 5
+
+jps | grep HMaster 
+29156 HMaster
+29364 HMaster
+27115 HMaster
+29260 HMaster
+
+cat  /tmp/hbase-root-*-master.pid 
+29156
+29260
+29364
+
+
+
+
+kill backup master 
+
+
+
+To kill a backup master without killing the entire cluster, you need to find its process ID (PID). The PID is stored in a file with a name like /tmp/hbase-USER-X-master.pid. The only contents of the file is the PID. You can use the kill -9 command to kill that PID. The following command will kill the master with port offset 1, but leave the cluster running:
+
+
+cat /tmp/hbase-testuser-1-master.pid |xargs kill -9
+
+cat /tmp/hbase-root-*-master.pid |xargs kill -9
+
+jps | grep HMaster
+27115 HMaster
+
+
+
+
+
+7 Start and stop additional RegionServers
+
+jps | grep HRegionServer
+27236 HRegionServer
+
+
+./bin/local-regionservers.sh start 2 3 4 5
+
+jps | grep HRegionServer
+27236 HRegionServer
+30404 HRegionServer
+30090 HRegionServer
+30192 HRegionServer
+30297 HRegionServer
+
+
+
+
+
+To stop a RegionServer manually, use the local-regionservers.sh command with the stop parameter and the offset of the server to stop.
+
+
+./bin/local-regionservers.sh stop 3
+
+
+
+[root@localhost hbase-2.0.6]# ./bin/local-regionservers.sh stop 2
+running regionserver, logging to /usr/local/hbase-2.0.6/bin/../logs/hbase-root-2-regionserver-localhost.localdomain.out
+stopping regionserver.
+[root@localhost hbase-2.0.6]# ./bin/local-regionservers.sh stop 3
+running regionserver, logging to /usr/local/hbase-2.0.6/bin/../logs/hbase-root-3-regionserver-localhost.localdomain.out
+stopping regionserver.
+[root@localhost hbase-2.0.6]# ./bin/local-regionservers.sh stop 4
+running regionserver, logging to /usr/local/hbase-2.0.6/bin/../logs/hbase-root-4-regionserver-localhost.localdomain.out
+stopping regionserver.
+[root@localhost hbase-2.0.6]# ./bin/local-regionservers.sh stop 5
+running regionserver, logging to /usr/local/hbase-2.0.6/bin/../logs/hbase-root-5-regionserver-localhost.localdomain.out
+stopping regionserver.
+[root@localhost hbase-2.0.6]# jps | grep HRegionServer
+27236 HRegionServer
+
+
+
+
+
+
+
+8 Stop HBase
+
+bin/stop-hbase.sh 
+

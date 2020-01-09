@@ -1,0 +1,58 @@
+HA hadoop 不需要 SecondaryNameNode 
+
+STANDBY状态的namenode会负责做checkpoint
+
+
+
+
+JournalNode    node-196 node-197 node-198
+
+mkdir -p /opt/hadoop/journal
+
+
+
+
+
+
+tar xzvf hadoop-2.7.4.tar.gz  -C /usr/local/
+
+vim /usr/local/hadoop-2.7.4/etc/hadoop/hadoop-env.sh
+
+export JAVA_HOME=/usr/local/jdk1.8.0_144
+
+
+vim /usr/local/hadoop-2.7.4/etc/hadoop/core-site.xml
+
+
+
+
+mkdir -p /opt/hadoop/tmp
+
+
+cat > /usr/local/hadoop-2.7.4/etc/hadoop/core-site.xml << EOF
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://node-191</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/opt/hadoop/tmp</value>
+    </property>
+    <property>
+        <name>ha.zookeeper.quorum</name>
+        <value>node-196:2181,node-197:2181,node-198:2181</value>
+    </property>
+</configuration>
+EOF
+
+
+
+
+
+
+
+
+
+
+

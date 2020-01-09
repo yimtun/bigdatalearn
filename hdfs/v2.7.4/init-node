@@ -1,0 +1,58 @@
+ip addr  add 10.0.0.31/24 dev eth0
+ip route add default via  10.0.0.1  dev eth0
+
+
+cat > /etc/resolv.conf << EOF
+nameserver 223.5.5.5
+EOF
+
+
+yum install cloud-utils-growpart -y
+growpart   /dev/vda 1
+xfs_growfs /dev/vda1
+df -lh
+
+
+
+关闭firewalld  NetworkManager selinux
+
+systemctl  stop firewalld NetworkManager
+systemctl  disable   firewalld NetworkManager
+
+
+sed -i 's/=enforcing/=disabled/' /etc/selinux/config
+setenforce 0
+
+echo 'UseDNS no'   >> /etc/ssh/sshd_config
+systemctl  restart sshd
+
+timedatectl set-timezone Asia/Shanghai
+
+
+/etc/default/grub
+GRUB_CMDLINE_LINUX="crashkernel=auto console=tty0 console=ttyS0,115200n8"
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+reboot
+
+test virsh console 
+
+poweroff
+
+backup image
+
+cp /kvm/image/172.16.99.101-hdfs-1.qcow2  /kvm/image/172.16.99.101-hdfs-node-backup.qcow2
+
+
+
+
+cat ifcfg-eth0 
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=172.16.99.101
+GATEWAY=172.16.99.250
+PREFIX=24
+NAME=eth0
+DEVICE=eth0
+ONBOOT=yes

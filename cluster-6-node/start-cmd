@@ -1,0 +1,65 @@
+https://blog.csdn.net/Trigl/article/details/55101826
+
+
+
+
+1、首先启动各个节点的Zookeeper，在各个节点上执行以下命令：
+
+bin/zkServer.sh start
+
+
+
+2、在某一个namenode节点执行如下命令，创建命名空间
+
+
+hdfs zkfc -formatZK
+
+
+
+3、在每个journalnode节点用如下命令启动journalnode
+
+sbin/hadoop-daemon.sh start journalnode
+
+
+4、在主namenode节点格式化namenode和journalnode目录
+
+hdfs namenode -format ns
+
+
+5、在主namenode节点启动namenode进程
+
+sbin/hadoop-daemon.sh start namenode
+
+
+6、在备namenode节点执行第一行命令，这个是把备namenode节点的目录格式化并把元数据从主namenode节点copy过来，
+并且这个命令不会把journalnode目录再格式化了！然后用第二个命令启动备namenode进程！
+
+hdfs namenode -bootstrapStandby
+sbin/hadoop-daemon.sh start namenode
+
+7、在两个namenode节点都执行以下命令
+
+sbin/hadoop-daemon.sh start zkfc
+
+8、在所有datanode节点都执行以下命令启动datanode
+
+
+sbin/hadoop-daemon.sh start datanode
+
+
+
+日常启停命令
+sbin/start-dfs.sh
+sbin/stop-dfs.sh
+
+
+
+2017-03-05更新
+Hadoop配置了HA，Spark也需要更改一些配置，
+否则会报java.net.UnknownHostException的错误，就是在$SPARK_HOME/conf/spark-defaults.conf内添加如下内容：
+
+spark.files file:///data/install/hadoop-2.7.3/etc/hadoop/hdfs-site.xml,file:///data/install/hadoop-2.7.3/etc/hadoop/core-site.xml
+
+
+
+
